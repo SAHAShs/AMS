@@ -22,8 +22,17 @@ namespace AMS.Infrastructure.Repository
 
         public async Task<bool> AddAsync(Asset dto)
         {
+            try
+            {
+
             await _context.assets.AddAsync(dto);
            return await _context.SaveChangesAsync()>0;
+
+            }catch(Exception e)
+            {
+
+            }
+            return true;
         }
 
         public async Task<bool> DeleteAsync(Asset asset)

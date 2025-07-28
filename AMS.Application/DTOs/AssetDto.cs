@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AMS.Domain.Entities;
+using AMS.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +13,11 @@ namespace AMS.Application.DTOs
         public int Id { get; set; }
         public string Name { get; set; }
         public string SerialNumber { get; set; }
-        public string Category { get; set; }
-        public string Status { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+        public AssetCategory Category { get; set; }
+        public AssetStatus Status { get; set; } = AssetStatus.Available;
+        public DateTime PurchaseDate { get; set; }
+
+        public int? AllocatedTo { get; set; }
     }
 }

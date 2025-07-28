@@ -1,0 +1,74 @@
+﻿@page "/assets/edit/{id:int}"
+@using AMS.Domain.Entities
+@using AMS.Domain.Enums
+@rendermode InteractiveServer
+<h1>Edit</h1>
+
+<EditForm Model="asset" OnValidSubmit="submitEditedAsset" FormName="EditAssetForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Asset Name</label>
+        <InputText class="form-control" @bind-Value="asset.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label>Serial Number</label>
+        <InputText class="form-control" @bind-Value="asset.SerialNumber" />
+    </div>
+
+
+
+    <div class="mb-3">
+        <label>Purchase Date</label>
+        <InputDate class="form-control" @bind-Value="asset.PurchaseDate" />
+    </div>
+
+    <div class="mb-3">
+        <label>Category</label>
+        <InputSelect class="form-control" @bind-Value="asset.CategoryId">
+            <option value="">-- Select Category --</option>
+            @foreach (var category in Categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="mb-3">
+        <label>Status</label>
+        <InputSelect class="form-control" @bind-Value="asset.Status">
+            @foreach (AssetStatus status in Enum.GetValues(typeof(AssetStatus)))
+            {
+                <option value="@status">@status</option>
+            }
+        </InputSelect>
+
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+
+
+@code {
+    [Parameter] public int id { set; get; }
+    private List<AssetCategory> Categories = new() ;
+
+    private AssetDto asset = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        asset =await _service.GetAssetByIdAsync(id);
+    }
+    private async Task submitEditedAsset()
+    {
+        var res = await _service.UpdateAssetAsync(id,asset);
+        if (res)
+        {
+            _navigate.NavigateTo("/home");
+        }
+        
+    }
+}

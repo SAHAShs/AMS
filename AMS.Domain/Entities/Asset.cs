@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AMS.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,8 +13,13 @@ namespace AMS.Domain.Entities
        [Key] public int Id { get; set; }
         public string Name { get; set; }
         public string SerialNumber { get; set; }
-        public string Category { get; set; }
+        public int CategoryId { get; set; }   
+        public AssetCategory Category { get; set; }  
         public DateTime PurchaseDate { get; set; }
-        public string Status { get; set; }
+        public AssetStatus Status { get; set; } = AssetStatus.Available;
+
+        public int? AllocatedTo { get; set; }
+
+        public Employee? AllocatedEmployee { get; set; }
     }
 }
