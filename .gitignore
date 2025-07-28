@@ -1,0 +1,25 @@
+﻿## Ignore Visual Studio files
+.vs/
+*.user
+*.suo
+
+## Build results
+bin/
+obj/
+
+## Rider/JetBrains
+.idea/
+
+## Logs
+*.log
+
+## Database files
+*.mdf
+*.ldf
+
+## User-specific files
+*.userosscache
+*.sln.docstates
+
+## AutoMapper cache / VS-related
+*.vsidx

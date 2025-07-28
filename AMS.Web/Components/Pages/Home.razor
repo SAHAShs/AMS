@@ -1,0 +1,37 @@
+﻿@page "/"
+@using AMS.Application.Service.Assets
+@using AMS.Application.DTOs
+@inject IAssetService _service
+@inject NavigationManager _navigate
+
+<button class="btn btn-primary" @onclick="@addAsset">Add</button>
+@if (assets.Count != 0)
+{
+
+    @foreach (var asset in assets)
+    {
+        <td>@asset.Id</td>
+    }
+}
+else
+{
+    <p>No Records Found !</p>
+}
+
+@code {
+    List<AssetDto> assets = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var assets = await _service.GetAllAssetsAsync();
+        if (assets.Count != 0)
+        {
+            assets = this.assets;
+        }
+    }
+
+    protected void addAsset()
+    {
+        _navigate.NavigateTo("/assets/Add");
+    }
+}

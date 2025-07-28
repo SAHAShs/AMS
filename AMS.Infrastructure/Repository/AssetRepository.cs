@@ -1,0 +1,51 @@
+﻿using AMS.Application.DTOs;
+using AMS.Application.Repository.Assets;
+using AMS.Domain.Entities;
+using AMS.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AMS.Infrastructure.Repository
+{
+    public class AssetRepository : IAssetRepository
+    {
+        private readonly AMSDbContext _context;
+
+        public AssetRepository(AMSDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<bool> AddAsync(Asset dto)
+        {
+            await _context.assets.AddAsync(dto);
+           return await _context.SaveChangesAsync()>0;
+        }
+
+        public async Task<bool> DeleteAsync(Asset asset)
+        {
+            _context.assets.Remove(asset); //imp to note:- Remove is synchronous, you cant make it await
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<List<Asset>> GetAllAsync()
+        {
+           return await _context.assets.ToListAsync();
+        }
+
+        public async Task<Asset?> GetByIdAsync(int id)
+        {
+           return _context.assets.FirstOrDefault(x => x.Id == id);
+        }
+
+        public async Task<bool> UpdateAsync(int id, Asset updatedAsset)
+        {
+            _context.assets.Update(updatedAsset);
+            return await _context.SaveChangesAsync() > 0;
+        }
+    }
+}
