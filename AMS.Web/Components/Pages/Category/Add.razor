@@ -1,0 +1,44 @@
+﻿@using AMS.Application.Service.Category
+@using AMS.Domain.Entities
+@page "/category/add"
+@inject ICategoryService _service
+<h3>Add Category</h3>
+
+
+<EditForm Model="category" OnSubmit="SubmitCategory" FormName="AddACategoryForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Name</label>
+        <InputText class="form-control" @bind-Value="category.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <InputText class="form-control" @bind-Value="category.Description" />
+    </div>
+
+
+
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+
+
+</EditForm>
+
+
+
+@code {
+    [SupplyParameterFromForm] public AssetCategory category { get; set; } = new AssetCategory();
+
+
+    protected async Task SubmitCategory()
+    {
+        if(await _service.AddAsync(category))
+        {
+            _navigate.NavigateTo("/category/list");
+        }
+    }
+
+}

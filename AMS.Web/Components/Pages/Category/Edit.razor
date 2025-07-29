@@ -1,0 +1,56 @@
+﻿@page "/category/edit/{Id:int}"
+
+@using AMS.Application.Service.Category
+@using AMS.Domain.Entities
+@using AMS.Domain.Enums
+@rendermode InteractiveServer
+@inject ICategoryService _categoryService
+<h1>Edit</h1>
+
+<EditForm Model="category" OnValidSubmit="submitEditedCategory" FormName="EditCategoryForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Asset Name</label>
+        <InputText class="form-control" @bind-Value="category.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label>Serial Number</label>
+        <InputText class="form-control" @bind-Value="category.Description" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button class="btn btn-secondary" @onclick="CancelClick">Cancel</button>
+</EditForm>
+
+
+@code {
+    [Parameter] public int id { set; get; }
+ private AssetCategory category { get; set; } = new();
+
+ 
+
+    protected override async Task OnInitializedAsync()
+    {
+        category = _categoryService.GetByIdAsync(id);
+       
+    }
+    private async Task submitEditedCategory()
+    {
+        var res = await _categoryService.UpdateAsync(id, category);
+        if (res)
+        {
+            _navigate.NavigateTo("/category/list");
+        }
+
+    }
+
+    protected void CancelClick()
+    {
+        category = new();
+        
+        _navigate.NavigateTo("/category/list");
+    }
+}

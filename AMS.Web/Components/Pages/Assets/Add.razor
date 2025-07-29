@@ -1,10 +1,12 @@
 ﻿@page "/assets/add"
 @using AMS.Application.DTOs
 @using AMS.Application.Service.Assets
+@using AMS.Application.Service.Category
 @using AMS.Domain.Entities
 @using AMS.Domain.Enums
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAssetService _service
+@inject ICategoryService _categoryService
 <title>Add Asset</title>
 @rendermode InteractiveServer
 
@@ -62,17 +64,18 @@
     private List<AssetCategory> Categories = new();
 
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         asset = new();
+        Categories = await _categoryService.GetAllAsync();
     }
     private async Task submitAsset()
     {
         var res = await _service.AddAssetAsync(asset);
         if (res)
         {
-            _navigate.NavigateTo("/home");
+            _navigate.NavigateTo("/assets/list");
         }
-       // Console.WriteLine($"Asset Added: {asset.Name}, {asset.SerialNumber}, {asset.Category}, {asset.PurchaseDate}");
+      
     }
 }

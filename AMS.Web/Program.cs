@@ -1,5 +1,7 @@
 using AMS.Application.Repository.Assets;
+using AMS.Application.Repository.Category;
 using AMS.Application.Service.Assets;
+using AMS.Application.Service.Category;
 using AMS.Application.Shared;
 using AMS.Infrastructure.Context;
 using AMS.Infrastructure.Repository;
@@ -16,7 +18,9 @@ builder.Services.AddDbContext<AMSDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("connectionstring")));
 
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IAssetService, AssetService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddAutoMapper(typeof(AssetProfile));
 var app = builder.Build();
 

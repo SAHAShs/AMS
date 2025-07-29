@@ -1,7 +1,10 @@
 ﻿@page "/assets/edit/{id:int}"
+@using AMS.Application.Service.Category
 @using AMS.Domain.Entities
 @using AMS.Domain.Enums
 @rendermode InteractiveServer
+@inject IAssetService _service
+@inject ICategoryService _categoryService
 <h1>Edit</h1>
 
 <EditForm Model="asset" OnValidSubmit="submitEditedAsset" FormName="EditAssetForm">
@@ -48,6 +51,7 @@
     </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>
+    <button  class="btn btn-secondary" @onclick="CancelClick">Cancel</button>
 </EditForm>
 
 
@@ -61,14 +65,22 @@
     protected override async Task OnInitializedAsync()
     {
         asset =await _service.GetAssetByIdAsync(id);
+        Categories = await _categoryService.GetAllAsync();
     }
     private async Task submitEditedAsset()
     {
         var res = await _service.UpdateAssetAsync(id,asset);
         if (res)
         {
-            _navigate.NavigateTo("/home");
+            _navigate.NavigateTo("/assets/list");
         }
-        
+
+    }
+
+    protected void CancelClick()
+    {
+        asset = new();
+        Categories = new();
+        _navigate.NavigateTo("/assets/list");
     }
 }

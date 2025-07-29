@@ -1,0 +1,105 @@
+﻿@page "/assets/list"
+@using AMS.Web.Components.Layout
+@inject IAssetService _service
+@rendermode InteractiveServer
+
+<button class="btn btn-primary" @onclick="addAsset">Add</button>
+@if (assets.Count != 0)
+{
+    int i = 0;
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Serial Number</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Purchase Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+
+        <tbody>
+
+
+
+            @foreach (var asset in assets)
+            {
+                <tr>
+                    <td>@(++i)</td>
+                    <td>@asset.Name</td>
+                    <td>@asset.SerialNumber</td>
+                    <td>@asset.Category.Name</td>
+                    <td>@asset.Status</td>
+                    <td>@asset.PurchaseDate</td>
+                    <td>
+                        @* <a class="btn btn-outline-primary" href="/assets/edit/@asset.Id">Edit</a> *@
+                        <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"/assets/edit/{asset.Id}"))">Edit</button>
+
+                        <button class="btn btn-sm btn-outline-danger" @onclick="@(() => ShowDeleteModal(asset.Id))">Delete</button>
+
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Records Found !</p>
+}
+
+
+
+<ConfirmModal @ref="deleteModal"
+              Message="Are you sure you want to delete this asset?"
+              TargetId="@SelectedId"
+              Show="@ShowModal"
+              OnConfirm="OnConfirmedDelete"
+              OnCancel="OnCancelledDelete" />
+
+@code {
+    List<AssetDto> assets = new();
+
+    private ConfirmModal deleteModal;
+    private bool ShowModal = false;
+    private int SelectedId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        assets = await _service.GetAllAssetsAsync();
+
+    }
+
+    protected void addAsset()
+    {
+        _navigate.NavigateTo("/assets/Add");
+    }
+
+    private void ShowDeleteModal(int id)
+    {
+        SelectedId = id;
+        ShowModal = true;
+
+        StateHasChanged();
+    }
+
+    private async Task OnConfirmedDelete(int id)
+    {
+        ShowModal = false;
+        // Call delete service here
+        await _service.DeleteAssetAsync(id);
+        assets = await _service.GetAllAssetsAsync();
+        StateHasChanged();
+    }
+
+    private async Task OnCancelledDelete()
+    {
+        ShowModal = false;
+        StateHasChanged();
+    }
+
+}

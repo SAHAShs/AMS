@@ -44,7 +44,7 @@ namespace AMS.Application.Service.Assets
 
         public async Task<AssetDto?> GetAssetByIdAsync(int id)
         {
-            return  _mapper.Map<AssetDto>(await _assetRepository.GetByIdAsync(id));
+            return  _mapper.Map<AssetDto>( _assetRepository.GetByIdAsync(id));
         }
 
         public async Task<bool> UpdateAssetAsync(int id,AssetDto dto)

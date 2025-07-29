@@ -30,6 +30,8 @@ namespace AMS.Infrastructure.Context
                 .OnDelete(DeleteBehavior.Restrict);
         }
         public DbSet<Asset> assets { get; set; }
+
+        public DbSet<AssetCategory> categories { get; set; }
         public DbSet<Employee> employees { get; set;}
     }
 }
