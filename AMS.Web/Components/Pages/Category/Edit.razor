@@ -5,37 +5,44 @@
 @using AMS.Domain.Enums
 @rendermode InteractiveServer
 @inject ICategoryService _categoryService
-<h1>Edit</h1>
+<title>Edit Category</title>
 
-<EditForm Model="category" OnValidSubmit="submitEditedCategory" FormName="EditCategoryForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="card">
+    <div class="card-header">Edit Category</div>
 
-    <div class="mb-3">
-        <label>Asset Name</label>
-        <InputText class="form-control" @bind-Value="category.Name" />
-    </div>
 
-    <div class="mb-3">
-        <label>Serial Number</label>
-        <InputText class="form-control" @bind-Value="category.Description" />
-    </div>
+    <EditForm Model="category" OnValidSubmit="submitEditedCategory" FormName="EditCategoryForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label>Asset Name</label>
+                    <InputText class="form-control" @bind-Value="category.Name" />
+                </div>
 
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <button class="btn btn-secondary" @onclick="CancelClick">Cancel</button>
-</EditForm>
+                <div class="col-md-3">
+                    <label>Description</label>
+                    <InputText  class="form-control" @bind-Value="category.Description" />
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <NavLink class="btn btn-secondary" href="/category/list">Cancel</NavLink>
+        </div>
+    </EditForm>
 
+</div>
 
 @code {
     [Parameter] public int id { set; get; }
- private AssetCategory category { get; set; } = new();
-
- 
+    private AssetCategory category { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         category = _categoryService.GetByIdAsync(id);
-       
+
     }
     private async Task submitEditedCategory()
     {
@@ -45,12 +52,5 @@
             _navigate.NavigateTo("/category/list");
         }
 
-    }
-
-    protected void CancelClick()
-    {
-        category = new();
-        
-        _navigate.NavigateTo("/category/list");
     }
 }

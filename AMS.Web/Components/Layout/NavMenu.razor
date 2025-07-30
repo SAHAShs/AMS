@@ -1,30 +1,56 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">AMS.Web</a>
-    </div>
-</div>
+﻿@* _NavMenu.razor *@
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
+<div class="d-flex">
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white p-3">
+        <div class="sidebar-header mb-4 d-flex align-items-center justify-content-between">
+            <a class="navbar-brand text-white fw-bold" href="/">AMS.Web</a>
+            <button class="btn btn-sm btn-outline-light d-md-none" @onclick="ToggleSidebar">☰</button>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+        <div class="@sidebarClass">
+            <!-- Home -->
+            <div class="nav-item mb-2">
+                <NavLink class="nav-link text-white" href="/" Match="NavLinkMatch.All">
+                    <i class="bi bi-house-door-fill me-2"></i> Home
+                </NavLink>
+            </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
+            <!-- Asset Section -->
+            <h6 class="text-secondary text-uppercase small mt-4">Asset</h6>
+            <div class="nav-item mb-2">
+                <NavLink class="nav-link text-white" href="/assets/list">
+                    <i class="bi bi-layers-fill me-2"></i> Asset List
+                </NavLink>
+            </div>
+
+            <!-- Category Section -->
+            <h6 class="text-secondary text-uppercase small mt-4">Category</h6>
+            <div class="nav-item mb-2">
+                <NavLink class="nav-link text-white" href="/category/list">
+                    <i class="bi bi-tags-fill me-2"></i> Category List
+                </NavLink>
+            </div>
+
+            <!-- Employee Section -->
+            <h6 class="text-secondary text-uppercase small mt-4">Employee</h6>
+            <div class="nav-item mb-2">
+                <NavLink class="nav-link text-white" href="/employee/list">
+                    <i class="bi bi-people-fill me-2"></i> Employee List
+                </NavLink>
+            </div>
         </div>
     </nav>
+
 </div>
 
+@code {
+    private bool isSidebarVisible = true;
+
+    private string sidebarClass => isSidebarVisible ? "sidebar-menu" : "d-none d-md-block sidebar-menu";
+
+    private void ToggleSidebar()
+    {
+        isSidebarVisible = !isSidebarVisible;
+    }
+}

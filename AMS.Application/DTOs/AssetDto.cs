@@ -17,7 +17,8 @@ namespace AMS.Application.DTOs
         public AssetCategory Category { get; set; }
         public AssetStatus Status { get; set; } = AssetStatus.Available;
         public DateTime PurchaseDate { get; set; }
-
         public int? AllocatedTo { get; set; }
+
+        public Employee? AllocatedEmployee { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace AMS.Infrastructure.Repository
 
         public async Task<List<AssetCategory>> GetAllAsync()
         {
-            return await _context.categories.Include(c => c.Assets).ToListAsync();
+            return await _context.categories.AsNoTracking().Include(c => c.Assets).AsNoTracking().ToListAsync();
         }
 
         public  AssetCategory? GetByIdAsync(int id)

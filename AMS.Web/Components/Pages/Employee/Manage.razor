@@ -1,0 +1,102 @@
+﻿@page "/employee/manage/{Id:int}"
+@using AMS.Application.Service.Employees
+@using AMS.Domain.Entities
+@inject IEmployeeService _employeeService
+@inject IAssetService _assetService
+@rendermode InteractiveServer
+<title>Manage Employee</title>
+<div class="card">
+    <div class="card-header">Manage Employee</div>
+    <EditForm Model="employee" OnValidSubmit="submitEditedEmployee" FormName="EditEmployeeForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Employee Id : </label>
+                    @employee.Id
+                </div>
+                <div class="col-md-4">
+                    <label>Name : </label>
+                    @employee.Name
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>Assign Assets : </label>
+                    <div class=" d-flex flex-wrap gap-2">
+                       
+                        @foreach (var asset in allAssets)
+                        {
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="asset.IsAssigned" />
+                                <label class="form-check-label">@asset.AssetName</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <NavLink class="btn btn-secondary" href="/employee/list">Cancel</NavLink>
+        </div>
+    </EditForm>
+</div>
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Employee employee = new();
+
+    private List<AssetCheckboxViewModel> allAssets = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        employee = _employeeService.GetByIdAsync(Id);
+
+        var assets = await _assetService.GetAllAssetsAsync();
+
+        allAssets = assets.Where(a => a.AllocatedTo == null || a.AllocatedTo == employee.Id)
+                .Select(a => new AssetCheckboxViewModel
+                {
+                    AssetId = a.Id,
+                    AssetName = a.Name,
+                    IsAssigned = a.AllocatedTo == employee?.Id
+                }).ToList();
+    }
+
+    protected async Task submitEditedEmployee()
+    {
+        var selectedAssetIds = allAssets
+            .Where(a => a.IsAssigned)
+            .Select(a => a.AssetId)
+            .ToList();
+        var allAsset = await _assetService.GetAllAssetsAsync();
+        foreach (var asset in allAsset)
+        {
+            if (selectedAssetIds.Contains(asset.Id))
+            {
+                asset.Status = Domain.Enums.AssetStatus.Allocated;
+                asset.AllocatedTo = employee.Id;
+                await _assetService.UpdateAssetAsync(asset.Id, asset);
+            }
+            else if (asset.AllocatedTo == employee.Id)
+            {
+                asset.AllocatedTo = null;
+                asset.Status = Domain.Enums.AssetStatus.Available;
+                await _assetService.UpdateAssetAsync(asset.Id, asset);
+            }
+        }
+        
+            _navigate.NavigateTo("/employee/list");
+        
+    }
+
+
+    public class AssetCheckboxViewModel
+    {
+        public int AssetId { get; set; }
+        public string AssetName { get; set; }
+        public bool IsAssigned { get; set; }
+    }
+}

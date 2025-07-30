@@ -6,6 +6,6 @@
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public IEnumerable<Asset> AssignedAssets { get; set; }
+        public List<Asset> AssignedAssets { get; set; } = new List<Asset>();
     }
 }

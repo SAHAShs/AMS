@@ -1,4 +1,4 @@
-﻿<h3>List</h3>
+﻿<title>Category List</title>
 @using AMS.Application.Service.Category
 @using AMS.Domain.Entities
 @page "/category/list"
@@ -7,7 +7,7 @@
 @using AMS.Web.Components.Layout
 @rendermode InteractiveServer
 
-<button class="btn btn-primary" @onclick="addCategory">Add</button>
+
 @if (categories.Count != 0)
 {
     int i = 0;
@@ -22,12 +22,7 @@
                 <th>Actions</th>
             </tr>
         </thead>
-
-
         <tbody>
-
-
-
             @foreach (var category in categories)
             {
                 <tr>
@@ -35,17 +30,13 @@
                     <td>@category.Name</td>
                     <td>@category.Description</td>
                     <td>@category.Assets?.Count</td>
-                  
                     <td>
-                        @* <a class="btn btn-outline-primary" href="/assets/edit/@asset.Id">Edit</a> *@
                         <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"///{category.Assets}"))">View Assets</button>
-                        </td>
-                        <td>
+                    </td>
+                    <td>
                         <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => _navigate.NavigateTo($"/category/edit/{category.Id}"))">Edit</button>
 
-                        <button class="btn btn-sm btn-outline-danger" disabled="@(category.Assets?.Count!=0?true:false)" @onclick="@(() => ShowDeleteModal(category.Id))">Delete</button>
-
-
+                        <button class="btn btn-sm btn-outline-danger" disabled="@(category.Assets?.Count != 0 ? true : false)" @onclick="@(() => ShowDeleteModal(category.Id))">Delete</button>
                     </td>
                 </tr>
             }
@@ -56,7 +47,6 @@ else
 {
     <p>No Records Found !</p>
 }
-
 
 
 <ConfirmModal @ref="deleteModal"
@@ -78,7 +68,8 @@ else
         categories = await _service.GetAllAsync();
     }
 
-    protected void addCategory() {
+    protected void addCategory()
+    {
         _navigate.NavigateTo("/category/add");
     }
 
@@ -86,14 +77,12 @@ else
     {
         SelectedId = id;
         ShowModal = true;
-
         StateHasChanged();
     }
 
     private async Task OnConfirmedDelete(int id)
     {
         ShowModal = false;
-        // Call delete service here
         await _service.DeleteAsync(id);
         categories = await _service.GetAllAsync();
         StateHasChanged();

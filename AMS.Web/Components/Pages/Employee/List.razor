@@ -1,0 +1,61 @@
+﻿@page "/Employee/list"
+@using AMS.Application.Service.Employees
+@using AMS.Domain.Entities
+@rendermode InteractiveServer
+@inject IEmployeeService _service
+<title>Employees</title>
+@if (employees.Count != 0)
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Asset Under</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in employees)
+            {
+                <tr>
+                    <td>@emp.Id</td>
+                    <td>@emp.Name</td>
+                    <td>
+                        @for (int i = 0; i < emp.AssignedAssets.Count; i++)
+                        {
+                            var asset = emp.AssignedAssets[i];
+                            @(asset.Name)
+                            @(i < emp.AssignedAssets.Count - 1 ? ", " : "")
+                        }
+
+                    </td>
+                    <td>
+                        @* <a class="btn btn-outline-primary" href="/assets/edit/@asset.Id">Edit</a> *@
+                        <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"/Employee/manage/{emp.Id}"))">Edit</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Records Found !</p>
+}
+
+@code {
+   private  List<Employee> employees = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = new();
+        employees = await _service.GetAllAsync();
+        StateHasChanged();
+    }
+
+    protected void addAsset()
+    {
+        _navigate.NavigateTo("/assets/Add");
+    }
+}

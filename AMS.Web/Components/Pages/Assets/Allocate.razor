@@ -1,0 +1,87 @@
+﻿@page "/assets/allocate/{Id:int}"
+@using AMS.Application.Service.Employees
+@using AMS.Application.Service.Assets
+@using AMS.Domain.Entities
+@rendermode InteractiveServer
+@inject IEmployeeService _employeeService
+@inject IAssetService _assetService
+<title>Allocate Asset</title>
+<div class="card">
+    <div class="card-header">Allocate Asset</div>
+    <EditForm Model="asset" OnValidSubmit="AllocateAsset" FormName="AllocateAssetForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label>Asset Name : </label>
+                    @asset.Name
+                </div>
+
+                <div class="col-md-3">
+                    <label>Serial Number : </label>
+                    @asset.SerialNumber
+
+                </div>
+
+                <div class="col-md-3">
+                    <label>Purchase Date : </label>
+                    @asset.PurchaseDate.ToShortDateString()
+                </div>
+
+                <div class="col-md-3">
+                    <label>Category : </label>
+                    @asset.Category?.Name
+
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col-md-3">
+                    <label>Status : </label>
+                    @asset.Status
+
+                </div>
+
+                <div class="col-md-3">
+                    <label>Allocate To</label>
+                    <InputSelect class="form-control" @bind-Value="asset.AllocatedTo">
+                        <option value="">-- Select Category --</option>
+                        @foreach (var emp in employees)
+                        {
+                            <option value="@emp.Id">@(emp.Id + "-" + emp.Name)</option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <NavLink class="btn btn-secondary" href="/assets/list">Cancel</NavLink>
+
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private AssetDto asset = new();
+
+    private List<Employee> employees = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await _employeeService.GetAllAsync();
+        asset = await _assetService.GetAssetByIdAsync(Id);
+    }
+
+    protected async Task AllocateAsset()
+    {
+        if (await _assetService.AssignAsset(asset))
+        {
+            _navigate.NavigateTo("/assets/list");
+        }
+    }
+
+   
+}

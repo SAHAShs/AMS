@@ -25,6 +25,13 @@ namespace AMS.Application.Service.Assets
             return await _assetRepository.AddAsync(_mapper.Map<Asset>(dto));
         }
 
+        public async Task<bool> AssignAsset(AssetDto asset)
+        {
+            asset.Status = Domain.Enums.AssetStatus.Allocated;
+            await _assetRepository.UpdateAsync(_mapper.Map<Asset>(asset));
+            return true;
+        }
+
         public async Task<bool> DeleteAssetAsync(int id)
         {
             var asset = await _assetRepository.GetByIdAsync(id);
@@ -39,12 +46,26 @@ namespace AMS.Application.Service.Assets
 
         public async Task<List<AssetDto>> GetAllAssetsAsync()
         {
-            return _mapper.Map<List<AssetDto>>(await _assetRepository.GetAllAsync());
+           var assets = await _assetRepository.GetAllAsync();
+            return _mapper.Map<List<AssetDto>>(assets);
         }
 
         public async Task<AssetDto?> GetAssetByIdAsync(int id)
         {
-            return  _mapper.Map<AssetDto>( _assetRepository.GetByIdAsync(id));
+            var asset =await _assetRepository.GetByIdAsync(id);
+            var dto = _mapper.Map<AssetDto>(asset);
+            return dto;
+        }
+
+        public async Task<bool> UnassignAsset(int id)
+        {
+            var asset = await _assetRepository.GetByIdAsync(id);
+            if (asset == null)
+                return false;
+            asset.Status = Domain.Enums.AssetStatus.Available;
+            asset.AllocatedTo = null;
+            await _assetRepository.UpdateAsync(asset);
+            return true;
         }
 
         public async Task<bool> UpdateAssetAsync(int id,AssetDto dto)
@@ -54,7 +75,7 @@ namespace AMS.Application.Service.Assets
                 return false;
 
             _mapper.Map(dto, asset);
-            await _assetRepository.UpdateAsync(id,asset);
+            await _assetRepository.UpdateAsync(asset);
             return true;
         }
     }

@@ -15,5 +15,8 @@ namespace AMS.Application.Service.Assets
         Task<bool> AddAssetAsync(AssetDto dto);
         Task<bool> UpdateAssetAsync(int id, AssetDto dto);
         Task<bool> DeleteAssetAsync(int id);
+
+        Task<bool> UnassignAsset(int id);
+        Task<bool> AssignAsset(AssetDto dto);
     }
 }

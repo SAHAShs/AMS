@@ -2,40 +2,44 @@
 @using AMS.Domain.Entities
 @page "/category/add"
 @inject ICategoryService _service
-<h3>Add Category</h3>
+<title>Add Category</title>
 
+<div class="card">
+    <EditForm Model="category" OnSubmit="SubmitCategory" FormName="AddACategoryForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="card-header">Add Category</div>
+        <div class="card-body">
+            <div class="row">
+                
+                    <div class="col-md-3">
+                        <label>Name</label>
+                        <InputText class="form-control" @bind-Value="category.Name" />
+                    </div>
 
-<EditForm Model="category" OnSubmit="SubmitCategory" FormName="AddACategoryForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+                    <div class="col-md-3">
+                        <label>Description</label>
+                        <InputText class="form-control" @bind-Value="category.Description" />
+                    </div>
+              
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <NavLink class="btn btn-secondary" href="/assets/list">Cancel</NavLink>
 
-    <div class="mb-3">
-        <label>Name</label>
-        <InputText class="form-control" @bind-Value="category.Name" />
-    </div>
-
-    <div class="mb-3">
-        <label>Description</label>
-        <InputText class="form-control" @bind-Value="category.Description" />
-    </div>
-
-
-
-
-    <button type="submit" class="btn btn-primary">Submit</button>
-
-
-</EditForm>
+        </div>
+    </EditForm>
+</div>
 
 
 
 @code {
-    [SupplyParameterFromForm] public AssetCategory category { get; set; } = new AssetCategory();
-
+    [SupplyParameterFromForm] private AssetCategory category { get; set; } = new AssetCategory();
 
     protected async Task SubmitCategory()
     {
-        if(await _service.AddAsync(category))
+        if (await _service.AddAsync(category))
         {
             _navigate.NavigateTo("/category/list");
         }

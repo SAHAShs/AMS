@@ -43,17 +43,24 @@ namespace AMS.Infrastructure.Repository
 
         public async Task<List<Asset>> GetAllAsync()
         {
-           return await _context.assets.Include(c=>c.Category).ToListAsync();
+           return await _context.assets.AsNoTracking().Include(c=>c.Category).AsNoTracking().Include(e=>e.AllocatedEmployee).AsNoTracking().ToListAsync();
         }
 
         public async Task<Asset?> GetByIdAsync(int id)
         {
-           return _context.assets.FirstOrDefault(x => x.Id == id);
+           return _context.assets.AsNoTracking().Include(c => c.Category).Include(e=>e.AllocatedEmployee).AsNoTracking().FirstOrDefault(x => x.Id == id);
         }
 
-        public async Task<bool> UpdateAsync(int id, Asset updatedAsset)
+        public async Task<bool> UpdateAsync(Asset updatedAsset)
         {
-            _context.assets.Update(updatedAsset);
+            var local = _context.assets.Local.FirstOrDefault(entry => entry.Id == updatedAsset.Id);
+            if (local != null)
+            {
+                _context.Entry(local).State = EntityState.Detached;
+            }
+            _context.Entry(updatedAsset).State = EntityState.Modified;
+
+            _context.assets.Update(updatedAsset); // now safe
             return await _context.SaveChangesAsync() > 0;
         }
     }

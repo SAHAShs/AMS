@@ -1,9 +1,11 @@
 ﻿@page "/assets/list"
+@using AMS.Domain.Enums
 @using AMS.Web.Components.Layout
 @inject IAssetService _service
 @rendermode InteractiveServer
+<title>Asset List</title>
+@* <button class="btn btn-primary mb-2 align-items-end" @onclick="addAsset">Add</button> *@
 
-<button class="btn btn-primary" @onclick="addAsset">Add</button>
 @if (assets.Count != 0)
 {
     int i = 0;
@@ -15,6 +17,7 @@
                 <th>Serial Number</th>
                 <th>Category</th>
                 <th>Status</th>
+                <th>Allocated To</th>
                 <th>Purchase Date</th>
                 <th>Actions</th>
             </tr>
@@ -32,13 +35,44 @@
                     <td>@asset.Name</td>
                     <td>@asset.SerialNumber</td>
                     <td>@asset.Category.Name</td>
-                    <td>@asset.Status</td>
-                    <td>@asset.PurchaseDate</td>
                     <td>
+                        @if (asset.Status == AssetStatus.Available)
+                        {
+                            <p class="badge bg-success">Available</p>
+                        }
+                        else if (asset.Status == AssetStatus.Allocated)
+                        {
+                            <span class="badge bg-secondary">Allocated</span>
+                        }
+                        else if (asset.Status == AssetStatus.InRepair)
+                        {
+                            <span class="badge bg-danger">InRepair</span>
+                        }
+                        else 
+                        {
+                            <span class="badge bg-primary">Retired</span>
+                        }
+
+                    </td>
+                    <td>@asset.AllocatedEmployee?.Name</td>
+                    <td>@asset.PurchaseDate.ToShortDateString()</td>
+                    <td>
+                        @if (asset.AllocatedTo.HasValue)
+                        {
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="()=>UnAllocateAsset(asset.Id)">Un Allocate</button>
+
+                        }
+                        else 
+                        {
+                            <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"/assets/allocate/{asset.Id}"))">Allocate</button>
+
+                        }
+                        -
                         @* <a class="btn btn-outline-primary" href="/assets/edit/@asset.Id">Edit</a> *@
                         <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"/assets/edit/{asset.Id}"))">Edit</button>
-
-                        <button class="btn btn-sm btn-outline-danger" @onclick="@(() => ShowDeleteModal(asset.Id))">Delete</button>
+                        -
+                        @* <button class="btn btn-sm btn-outline-danger" @disabled="@asset.AllocatedTo.HasValue" @onclick="@(() => ShowDeleteModal(asset.Id))">Delete</button> *@
+                        <button class="btn btn-sm btn-outline-danger" disabled="@asset.AllocatedTo.HasValue" @onclick="@(() => ShowDeleteModal(asset.Id))">Delete</button>
 
 
                     </td>
@@ -102,4 +136,12 @@ else
         StateHasChanged();
     }
 
+    private async Task UnAllocateAsset(int Id)
+    {
+        if(await _service.UnassignAsset(Id))
+        {
+            assets = await _service.GetAllAssetsAsync();
+
+        }
+    }
 }
