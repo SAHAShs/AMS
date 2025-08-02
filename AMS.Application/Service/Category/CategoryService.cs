@@ -49,7 +49,7 @@ namespace AMS.Application.Service.Category
                 return false;
 
             
-            await _categoryRepository.UpdateAsync(id, asset);
+            await _categoryRepository.UpdateAsync(asset);
             return true;
         }
     }

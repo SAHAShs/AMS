@@ -50,7 +50,7 @@ namespace AMS.Application.Service.Employees
                 return false;
 
 
-            await _employeeRepository.UpdateAsync(id, asset);
+            await _employeeRepository.UpdateAsync( asset);
             return true;
         }
     }

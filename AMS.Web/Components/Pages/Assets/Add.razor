@@ -4,11 +4,14 @@
 @using AMS.Application.Service.Category
 @using AMS.Domain.Entities
 @using AMS.Domain.Enums
+@using AMS.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject IAssetService _service
 @inject ICategoryService _categoryService
 <title>Add Asset</title>
 @rendermode InteractiveServer
+@attribute [Authorize]
+
 
 <div class="card">
     <EditForm Model="asset" OnValidSubmit="submitAsset" FormName="AddAssetForm">
@@ -57,7 +60,7 @@
         </div>
         <div class="card-footer">
             <button type="submit" class="btn btn-primary">Submit</button>
-    <NavLink class="btn btn-secondary" href="/assets/list">Cancel</NavLink>
+            <NavLink class="btn btn-secondary" href="/assets/list">Cancel</NavLink>
 
         </div>
     </EditForm>
@@ -79,7 +82,14 @@
         var res = await _service.AddAssetAsync(asset);
         if (res)
         {
-            _navigate.NavigateTo("/assets/list");
+            _msgService.Message = "Asset Created successfully!";
+            _msgService.Type = "success";
         }
+        else
+        {
+            _msgService.Message = "Creating Asset Failed!";
+            _msgService.Type = "error";
+        }
+        _navigate.NavigateTo("/assets/list");
     }
 }

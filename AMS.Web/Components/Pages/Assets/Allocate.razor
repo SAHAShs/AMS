@@ -5,7 +5,9 @@
 @rendermode InteractiveServer
 @inject IEmployeeService _employeeService
 @inject IAssetService _assetService
+@attribute [Authorize]
 <title>Allocate Asset</title>
+
 <div class="card">
     <div class="card-header">Allocate Asset</div>
     <EditForm Model="asset" OnValidSubmit="AllocateAsset" FormName="AllocateAssetForm">
@@ -77,10 +79,18 @@
 
     protected async Task AllocateAsset()
     {
-        if (await _assetService.AssignAsset(asset))
+        var res = await _assetService.AssignAsset(asset);
+        if (res)
         {
-            _navigate.NavigateTo("/assets/list");
+            _msgService.Message = "Asset Allocated successfully!";
+            _msgService.Type = "success";
         }
+        else
+        {
+            _msgService.Message = "Allocating Asset Failed!";
+            _msgService.Type = "error";
+        }
+        _navigate.NavigateTo("/assets/list");
     }
 
    

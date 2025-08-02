@@ -1,5 +1,6 @@
 ﻿using AMS.Application.DTOs;
 using AMS.Application.Repository.Assets;
+using AMS.Application.Shared;
 using AMS.Domain.Entities;
 using AutoMapper;
 using System;
@@ -44,10 +45,19 @@ namespace AMS.Application.Service.Assets
         
         }
 
-        public async Task<List<AssetDto>> GetAllAssetsAsync()
+        public async Task<PagedResult<AssetDto>> GetAllAssetsAsync(PagedRequest req)
         {
-           var assets = await _assetRepository.GetAllAsync();
-            return _mapper.Map<List<AssetDto>>(assets);
+           var assets = await _assetRepository.GetAllAsync(req);
+            return new PagedResult<AssetDto>
+            {
+                Items = _mapper.Map<List<AssetDto>>(assets.Items),
+                TotalCount = assets.TotalCount
+            };
+        }
+
+        public async Task<List<AssetDto>> GetAllAssetsWithoutPageAsync()
+        {
+            return _mapper.Map<List<AssetDto>>(await _assetRepository.GetAllAssetsWithoutPageAsync());
         }
 
         public async Task<AssetDto?> GetAssetByIdAsync(int id)
@@ -55,6 +65,16 @@ namespace AMS.Application.Service.Assets
             var asset =await _assetRepository.GetByIdAsync(id);
             var dto = _mapper.Map<AssetDto>(asset);
             return dto;
+        }
+
+        public async Task<PagedResult<AssetDto>> GetAssetsByCategoryAsync(int? id,PagedRequest req)
+        {
+            var assets = await _assetRepository.GetByCategoryAsync(id,req);
+            return new PagedResult<AssetDto>
+            {
+                Items = _mapper.Map<List<AssetDto>>(assets.Items),
+                TotalCount = assets.TotalCount
+            };
         }
 
         public async Task<bool> UnassignAsset(int id)

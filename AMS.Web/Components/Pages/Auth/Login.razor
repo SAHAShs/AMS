@@ -1,0 +1,83 @@
+﻿@page "/login"
+@page "/Auth/login"
+@page "/"
+
+@using System.Security.Claims;
+@using AMS.Domain.Entities
+@using Microsoft.AspNetCore.Authentication;
+@using Microsoft.AspNetCore.Authentication.Cookies;
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+@* @rendermode InteractiveServer *@
+<h3 class="text-center mt-5 mb-4">Welcome Back</h3>
+
+<div class="d-flex justify-content-center">
+    <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger text-center" role="alert">
+                @error
+            </div>
+        }
+
+        <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
+            <div class="form-group mb-3">
+                <label for="username">Username</label>
+                <InputText id="username" @bind-value="loginModel.Username" class="form-control" placeholder="Enter username" />
+            </div>
+
+            <div class="form-group mb-4">
+                <label for="password">Password</label>
+                <InputText id="password" @bind-value="loginModel.Password" class="form-control" type="password" placeholder="Enter password" />
+            </div>
+
+            <button type="submit" class="btn btn-outline-primary w-100">Login</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]public LoginModel loginModel{ get; set; } = new();
+    private string error;
+
+    private async Task HandleLogin()
+    {
+        var user = FakeUserStore.Users.FirstOrDefault(u =>
+            u.Username == loginModel.Username && u.Password == loginModel.Password);
+
+        if (user is null)
+        {
+            error = "Invalid username or password";
+            return;
+        }
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, user.Username),
+            new(ClaimTypes.Role, user.Role),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString())
+        };
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContextAccessor.HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(20)
+            });
+
+        Navigation.NavigateTo("/home", forceLoad: true);
+
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+}

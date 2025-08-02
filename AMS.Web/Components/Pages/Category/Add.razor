@@ -3,6 +3,7 @@
 @page "/category/add"
 @inject ICategoryService _service
 <title>Add Category</title>
+@attribute [Authorize]
 
 <div class="card">
     <EditForm Model="category" OnSubmit="SubmitCategory" FormName="AddACategoryForm">
@@ -41,8 +42,16 @@
     {
         if (await _service.AddAsync(category))
         {
-            _navigate.NavigateTo("/category/list");
+            _msgService.Message = "Category Created successfully!";
+            _msgService.Type = "success";
         }
+        else
+        {
+            _msgService.Message = "Creating Category Failed!";
+            _msgService.Type = "error";
+        }
+        _navigate.NavigateTo("/category/list");
+        
     }
 
 }

@@ -48,10 +48,10 @@ namespace AMS.Infrastructure.Repository
 
         public Employee? GetByIdAsync(int id)
         {
-            return _context.employees.FirstOrDefault(x => x.Id == id);
+            return _context.employees.AsNoTracking().FirstOrDefault(x => x.Id == id);
         }
 
-        public async Task<bool> UpdateAsync(int id, Employee updatedEmployee)
+        public async Task<bool> UpdateAsync( Employee updatedEmployee)
         {
             _context.employees.Update(updatedEmployee);
             return await _context.SaveChangesAsync() > 0;

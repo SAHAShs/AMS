@@ -1,10 +1,13 @@
 ﻿@page "/employee/manage/{Id:int}"
 @using AMS.Application.Service.Employees
 @using AMS.Domain.Entities
+@using AMS.Domain.Enums
 @inject IEmployeeService _employeeService
 @inject IAssetService _assetService
 @rendermode InteractiveServer
 <title>Manage Employee</title>
+@attribute [Authorize]
+
 <div class="card">
     <div class="card-header">Manage Employee</div>
     <EditForm Model="employee" OnValidSubmit="submitEditedEmployee" FormName="EditEmployeeForm">
@@ -54,9 +57,11 @@
     {
         employee = _employeeService.GetByIdAsync(Id);
 
-        var assets = await _assetService.GetAllAssetsAsync();
+        var assets = await _assetService.GetAllAssetsWithoutPageAsync();
 
-        allAssets = assets.Where(a => a.AllocatedTo == null || a.AllocatedTo == employee.Id)
+        allAssets = assets.Where(a =>
+        a.AllocatedTo == null && a.Status == AssetStatus.Available
+        || a.AllocatedTo == employee?.Id)
                 .Select(a => new AssetCheckboxViewModel
                 {
                     AssetId = a.Id,
@@ -71,26 +76,54 @@
             .Where(a => a.IsAssigned)
             .Select(a => a.AssetId)
             .ToList();
-        var allAsset = await _assetService.GetAllAssetsAsync();
+
+        int expectedUpdation = 0;
+        int actualUpdation = 0;
+
+        var allAsset = await _assetService.GetAllAssetsWithoutPageAsync();
+
         foreach (var asset in allAsset)
         {
-            if (selectedAssetIds.Contains(asset.Id))
+            bool shouldBeAssigned = selectedAssetIds.Contains(asset.Id);
+            bool isCurrentlyAssignedToEmployee = asset.AllocatedTo == employee.Id;
+
+            
+            if (shouldBeAssigned && !isCurrentlyAssignedToEmployee)
             {
-                asset.Status = Domain.Enums.AssetStatus.Allocated;
                 asset.AllocatedTo = employee.Id;
-                await _assetService.UpdateAssetAsync(asset.Id, asset);
+                asset.Status = Domain.Enums.AssetStatus.Allocated;
+                expectedUpdation++;
+
+                if (await _assetService.UpdateAssetAsync(asset.Id, asset))
+                    actualUpdation++;
             }
-            else if (asset.AllocatedTo == employee.Id)
+            else if (!shouldBeAssigned && isCurrentlyAssignedToEmployee)
             {
                 asset.AllocatedTo = null;
                 asset.Status = Domain.Enums.AssetStatus.Available;
-                await _assetService.UpdateAssetAsync(asset.Id, asset);
+                expectedUpdation++;
+
+                if (await _assetService.UpdateAssetAsync(asset.Id, asset))
+                    actualUpdation++;
             }
         }
-        
-            _navigate.NavigateTo("/employee/list");
-        
+
+        // Flash message
+        if (expectedUpdation == actualUpdation)
+        {
+            _msgService.Message = "Employee updated successfully!";
+            _msgService.Type = "success";
+        }
+        else
+        {
+            _msgService.Message = $"Partial update: {actualUpdation}/{expectedUpdation} assets updated.";
+            _msgService.Type = "warning";
+        }
+
+        _navigate.NavigateTo("/employee/list");
     }
+
+
 
 
     public class AssetCheckboxViewModel

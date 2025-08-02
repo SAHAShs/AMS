@@ -1,3 +1,75 @@
 ﻿@page "/home"
-@page "/"
+@using AMS.Application.DTOs.Dashboard
+@using AMS.Application.Service.Dashboard
 @using AMS.Web.Components.Layout
+@inject IDashboardService DashboardService
+@attribute [Authorize]
+<h3>Asset Dashboard</h3>
+
+@if (dashboard == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Assets</h5>
+                    <p class="card-text">@dashboard.TotalAssets</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">In Use</h5>
+                    <p class="card-text">@dashboard.InUseAssets</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Maintenance</h5>
+                    <p class="card-text">@dashboard.UnderMaintenance</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Retired</h5>
+                    <p class="card-text">@dashboard.RetiredAssets</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Available</h5>
+                    <p class="card-text">@dashboard.AvailableAssets</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4>Category Wise Count</h4>
+    <ul>
+        @foreach (var item in dashboard.CategoryWiseCount)
+        {
+            <li><strong>@item.Key:</strong> @item.Value assets</li>
+        }
+    </ul>
+}
+
+@code {
+    private DashboardViewModel? dashboard;
+
+    protected override async Task OnInitializedAsync()
+    {
+        dashboard = await DashboardService.GetDashboardDataAsync();
+    }
+}
+

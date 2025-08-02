@@ -1,5 +1,6 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
+@using AMS.Web.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -13,3 +14,5 @@
 @using AMS.Application.DTOs
 
 @inject NavigationManager _navigate
+@using Microsoft.AspNetCore.Authorization
+@inject IMessageService _msgService

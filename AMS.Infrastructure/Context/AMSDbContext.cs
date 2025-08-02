@@ -1,4 +1,5 @@
-﻿using AMS.Domain.Entities;
+﻿using AMS.Application.DTOs.Dashboard;
+using AMS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,10 @@ namespace AMS.Infrastructure.Context
                 .WithMany(c => c.Assets)
                 .HasForeignKey(a => a.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DashboardSummaryDto>().HasNoKey();
+            
+            modelBuilder.Entity<CategoryWiseCountDto>().HasNoKey();
         }
         public DbSet<Asset> assets { get; set; }
 

@@ -48,10 +48,10 @@ namespace AMS.Infrastructure.Repository
 
         public  AssetCategory? GetByIdAsync(int id)
         {
-            return _context.categories.FirstOrDefault(x => x.Id == id);
+            return _context.categories.AsNoTracking().FirstOrDefault(x => x.Id == id);
         }
 
-        public async Task<bool> UpdateAsync(int id, AssetCategory updatedAssetCategory)
+        public async Task<bool> UpdateAsync(AssetCategory updatedAssetCategory)
         {
             _context.categories.Update(updatedAssetCategory);
             return await _context.SaveChangesAsync() > 0;

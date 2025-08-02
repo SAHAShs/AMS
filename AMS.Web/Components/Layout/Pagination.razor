@@ -1,0 +1,63 @@
+﻿@* PaginationComponent.razor *@
+@if (totalRecords > 0)
+{
+    int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+    int startRecord = ((currentPage - 1) * pageSize) + 1;
+    int endRecord = Math.Min(startRecord + pageSize - 1, totalRecords);
+
+
+    <div class="d-flex justify-content-between">
+        <div>
+            Showing @startRecord–@endRecord of @totalRecords @(totalRecords == 1 ? "record" : "records")
+        </div>
+
+        <nav class="@WrapperClass">
+            <ul class="pagination">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => ChangePage(1)">« First</button>
+                </li>
+
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => ChangePage(currentPage - 1)">‹ Prev</button>
+                </li>
+
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    var pageNumber = i;
+                    <li class="page-item @(pageNumber == currentPage ? "active" : "")">
+                        <button class="page-link" @onclick="@(() => ChangePage(pageNumber))">@pageNumber</button>
+                    </li>
+                }
+
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => ChangePage(currentPage + 1)">Next ›</button>
+                </li>
+
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => ChangePage(totalPages)">Last »</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+}
+
+@code {
+    [Parameter] public int totalRecords { get; set; }
+    [Parameter] public int currentPage { get; set; } = 1;
+    [Parameter] public int pageSize { get; set; } = 10;
+    [Parameter] public EventCallback<int> GotToPage { get; set; }
+    [Parameter] public string WrapperClass { get; set; } = "d-flex justify-content-between align-items-center";
+
+    private async Task ChangePage(int page)
+    {
+        int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+        if (page < 1 || page > totalPages)
+            return;
+
+        if (GotToPage.HasDelegate)
+        {
+            await GotToPage.InvokeAsync(page);
+        }
+    }
+}

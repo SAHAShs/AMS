@@ -6,6 +6,7 @@
 @rendermode InteractiveServer
 @inject ICategoryService _categoryService
 <title>Edit Category</title>
+@attribute [Authorize]
 
 <div class="card">
     <div class="card-header">Edit Category</div>
@@ -49,8 +50,14 @@
         var res = await _categoryService.UpdateAsync(id, category);
         if (res)
         {
-            _navigate.NavigateTo("/category/list");
+            _msgService.Message = "Category Updated successfully!";
+            _msgService.Type = "success";
         }
-
+        else
+        {
+            _msgService.Message = "Updating Category failed!";
+            _msgService.Type = "error";
+        }
+        _navigate.NavigateTo("/category/list");
     }
 }

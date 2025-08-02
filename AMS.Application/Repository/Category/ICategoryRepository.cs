@@ -12,7 +12,7 @@ namespace AMS.Application.Repository.Category
         Task<List<AssetCategory>> GetAllAsync();
         AssetCategory? GetByIdAsync(int id);
         Task<bool> AddAsync(AssetCategory dto);
-        Task<bool> UpdateAsync(int id, AssetCategory dto);
+        Task<bool> UpdateAsync(AssetCategory dto);
         Task<bool> DeleteAsync(AssetCategory asset);
     }
 }

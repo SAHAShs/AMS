@@ -4,6 +4,9 @@
 @rendermode InteractiveServer
 @inject IEmployeeService _service
 <title>Employees</title>
+@attribute [Authorize]
+
+<AMS.Web.Components.Layout.MessageComponent></AMS.Web.Components.Layout.MessageComponent>
 @if (employees.Count != 0)
 {
     <table class="table table-bordered">

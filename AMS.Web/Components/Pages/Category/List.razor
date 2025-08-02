@@ -3,10 +3,10 @@
 @using AMS.Domain.Entities
 @page "/category/list"
 @inject ICategoryService _service
-
 @using AMS.Web.Components.Layout
 @rendermode InteractiveServer
-
+@attribute [Authorize]
+<MessageComponent></MessageComponent>
 
 @if (categories.Count != 0)
 {
@@ -31,7 +31,7 @@
                     <td>@category.Description</td>
                     <td>@category.Assets?.Count</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"///{category.Assets}"))">View Assets</button>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"assets/list/FilterByCategory/{category.Id}"))">View Assets</button>
                     </td>
                     <td>
                         <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => _navigate.NavigateTo($"/category/edit/{category.Id}"))">Edit</button>
@@ -59,7 +59,7 @@ else
 @code {
     private List<AssetCategory> categories = new();
 
-    private ConfirmModal deleteModal;
+    private ConfirmModal deleteModal = new();
     private int SelectedId;
     private bool ShowModal = false;
 
@@ -83,7 +83,16 @@ else
     private async Task OnConfirmedDelete(int id)
     {
         ShowModal = false;
-        await _service.DeleteAsync(id);
+        if(await _service.DeleteAsync(id))
+        {
+            _msgService.Message = "Category Deleted successfully!";
+            _msgService.Type = "success";
+        }
+        else
+        {
+            _msgService.Message = "Can't Delete Category!";
+            _msgService.Type = "error";
+        }
         categories = await _service.GetAllAsync();
         StateHasChanged();
     }

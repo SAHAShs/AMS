@@ -12,7 +12,7 @@ namespace AMS.Application.Repository.Employees
         Task<List<Employee>> GetAllAsync();
         Employee? GetByIdAsync(int id);
         Task<bool> AddAsync(Employee dto);
-        Task<bool> UpdateAsync(int id, Employee dto);
+        Task<bool> UpdateAsync(Employee dto);
         Task<bool> DeleteAsync(Employee asset);
     }
 }

@@ -1,37 +1,49 @@
 ﻿@page "/assets/list"
+@page "/assets/list/FilterByCategory/{CategoryId:int?}"
+@using AMS.Application.Shared
 @using AMS.Domain.Enums
 @using AMS.Web.Components.Layout
+@using Microsoft.AspNetCore.Authorization
 @inject IAssetService _service
 @rendermode InteractiveServer
 <title>Asset List</title>
-@* <button class="btn btn-primary mb-2 align-items-end" @onclick="addAsset">Add</button> *@
+@attribute [Authorize]
 
-@if (assets.Count != 0)
-{
-    int i = 0;
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Serial Number</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Allocated To</th>
-                <th>Purchase Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+<MessageComponent></MessageComponent>
 
-
-        <tbody>
-
-
-
+<div class="d-flex justify-content-between mb-2">
+    <div class="text-muted">
+        <select class="form-select" style="width: auto;" @onchange="OnPageSizeChanged">
+            @foreach (var size in pageSizeOptions)
+            {
+                <option value="@size" selected="@(pagesize == size)">@size / page</option>
+            }
+        </select>
+    </div>
+    <div class="">
+        <input @bind-value="searchTerm" class="form-control" @bind-value:event="oninput" placeholder="search" />
+    </div>
+</div>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th @onclick="@(() => ApplySorting("Id"))"># @SortIcon("Id")</th>
+            <th @onclick="@(() => ApplySorting("name"))">Name @SortIcon("name")</th>
+            <th @onclick="@(() => ApplySorting("serailnumber"))">Serial Number @SortIcon("serailnumber")</th>
+            <th @onclick="@(() => ApplySorting("category.name"))">Category @SortIcon("category.name")</th>
+            <th @onclick="@(() => ApplySorting("status"))">Status @SortIcon("status")</th>
+            <th>Allocated To</th>
+            <th @onclick="@(() => ApplySorting("purchasedate"))">Purchase Date @SortIcon("purchasedate")</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (assets.Count != 0)
+        {
             @foreach (var asset in assets)
             {
                 <tr>
-                    <td>@(++i)</td>
+                    <td>@asset.Id</td>
                     <td>@asset.Name</td>
                     <td>@asset.SerialNumber</td>
                     <td>@asset.Category.Name</td>
@@ -48,7 +60,7 @@
                         {
                             <span class="badge bg-danger">InRepair</span>
                         }
-                        else 
+                        else
                         {
                             <span class="badge bg-primary">Retired</span>
                         }
@@ -56,16 +68,14 @@
                     </td>
                     <td>@asset.AllocatedEmployee?.Name</td>
                     <td>@asset.PurchaseDate.ToShortDateString()</td>
-                    <td>
+                    <td class="d-flex justify-content-evenly">
                         @if (asset.AllocatedTo.HasValue)
                         {
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="()=>UnAllocateAsset(asset.Id)">Un Allocate</button>
-
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => UnAllocateAsset(asset.Id)">Un Allocate</button>
                         }
-                        else 
+                        else
                         {
                             <button class="btn btn-sm btn-outline-primary" @onclick="@(() => _navigate.NavigateTo($"/assets/allocate/{asset.Id}"))">Allocate</button>
-
                         }
                         -
                         @* <a class="btn btn-outline-primary" href="/assets/edit/@asset.Id">Edit</a> *@
@@ -73,18 +83,23 @@
                         -
                         @* <button class="btn btn-sm btn-outline-danger" @disabled="@asset.AllocatedTo.HasValue" @onclick="@(() => ShowDeleteModal(asset.Id))">Delete</button> *@
                         <button class="btn btn-sm btn-outline-danger" disabled="@asset.AllocatedTo.HasValue" @onclick="@(() => ShowDeleteModal(asset.Id))">Delete</button>
-
-
                     </td>
                 </tr>
             }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No Records Found !</p>
-}
+        }
+        else
+        {
+            <tr>
+                <td colspan="8">No Records Found !</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<Pagination totalRecords="@totalRecords"
+            currentPage="@currentPage"
+            pagesize="@pagesize"
+            GotToPage="GoToPage" />
+
 
 
 
@@ -96,16 +111,112 @@ else
               OnCancel="OnCancelledDelete" />
 
 @code {
+    [Parameter] public int? CategoryId { get; set; }
+
     List<AssetDto> assets = new();
 
     private ConfirmModal deleteModal;
     private bool ShowModal = false;
     private int SelectedId;
 
+    private int totalRecords;
+    private int currentPage = 1;
+    private int pagesize = 5;
+
+    private string _searchterm = "";
+    private string? searchTerm
+    {
+        get => _searchterm;
+        set
+        {
+            _searchterm = value;
+            _ = OnSearchChanged();
+        }
+    }
+    private string? sortcolumn = "Id";
+    private bool IsAscending = true;
+
+    private readonly int[] pageSizeOptions = new[] { 2, 5, 10, 25, 50, 100 };
+
+    private RenderFragment SortIcon(string column) => __builder =>
+    {
+        if (sortcolumn == column)
+        {
+            var icon = IsAscending ? "▲" : "▼";
+
+            __builder.OpenElement(0, "span");
+            __builder.AddAttribute(1, "class", "text-gray text-muted");
+            __builder.AddContent(2, icon);
+            __builder.CloseElement();
+        }
+    };
+
+    private async Task OnPageSizeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int newSize))
+        {
+            pagesize = newSize;
+            currentPage = 1; // Reset to first page
+            await LoadData();
+        }
+
+    }
+
+    private async Task LoadData()
+    {
+        var req = new PagedRequest
+        {
+            IsAscending = IsAscending,
+            PageNumber = currentPage,
+            PageSize = pagesize,
+            SearchTerm = searchTerm,
+            SortColumn = sortcolumn
+        };
+        dynamic result;
+        if (CategoryId.HasValue)
+        {
+            result = await _service.GetAssetsByCategoryAsync(CategoryId,req);
+        }
+        else
+        {
+            result = await _service.GetAllAssetsAsync(req);
+        }
+        totalRecords = result.TotalCount;
+        assets = result.Items;
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        assets = await _service.GetAllAssetsAsync();
 
+        await LoadData();
+
+
+    }
+
+    protected async Task OnSearchChanged()
+    {
+        currentPage = 1;
+        await LoadData();
+    }
+
+    private async Task ApplySorting(string col)
+    {
+        if (sortcolumn == col)
+        {
+            IsAscending = !IsAscending;
+        }
+        else
+        {
+            sortcolumn = col;
+            IsAscending = true;
+        }
+        await LoadData();
+    }
+
+    private async Task GoToPage(int page)
+    {
+        currentPage = page;
+        await LoadData();
     }
 
     protected void addAsset()
@@ -124,9 +235,17 @@ else
     private async Task OnConfirmedDelete(int id)
     {
         ShowModal = false;
-        // Call delete service here
-        await _service.DeleteAssetAsync(id);
-        assets = await _service.GetAllAssetsAsync();
+        if( await _service.DeleteAssetAsync(id))
+        {
+            _msgService.Message = "Asset Deleted successfully!";
+            _msgService.Type = "success";
+        }
+        else
+        {
+            _msgService.Message = "Can't Delete Asset!";
+            _msgService.Type = "error";
+        }
+        await LoadData();
         StateHasChanged();
     }
 
@@ -138,10 +257,17 @@ else
 
     private async Task UnAllocateAsset(int Id)
     {
-        if(await _service.UnassignAsset(Id))
+        if (await _service.UnassignAsset(Id))
         {
-            assets = await _service.GetAllAssetsAsync();
+            _msgService.Message = "Asset UnAllocated successfully!";
+            _msgService.Type = "success";
+            await LoadData();
 
+        }
+        else
+        {
+            _msgService.Message = "Can't UnAllocate Asset!";
+            _msgService.Type = "error";
         }
     }
 }

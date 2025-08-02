@@ -1,0 +1,48 @@
+﻿@using AMS.Web.Services
+@inject IMessageService MessageService
+@if (!string.IsNullOrEmpty(MessageService.Message))
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+        <div class="toast show align-items-center text-white bg-@GetColor() border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    @MessageService.Message
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" @onclick="Dismiss" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private void Dismiss()
+    {
+        MessageService.Message = null;
+        MessageService.Type = null;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _ = Task.Delay(5000).ContinueWith(_ =>
+            {
+                MessageService.Message = null;
+                MessageService.Type = null;
+                InvokeAsync(StateHasChanged);
+            });
+        }
+    }
+
+    private string GetColor()
+    {
+        return MessageService.Type switch
+        {
+            "success" => "success",
+            "error" => "danger",
+            "info" => "info",
+            "warning" => "warning",
+            _ => "secondary"
+        };
+    }
+}
